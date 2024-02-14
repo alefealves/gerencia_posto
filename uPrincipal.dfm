@@ -26,8 +26,8 @@ object form_principal: Tform_principal
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    ExplicitWidth = 1022
-    ExplicitHeight = 869
+    ExplicitWidth = 1032
+    ExplicitHeight = 901
     object tbAbastecimento: TTabSheet
       Caption = 'Abastecimento'
       object Label1: TLabel
@@ -144,17 +144,21 @@ object form_principal: Tform_principal
         Width = 180
         Height = 38
         DataField = 'CODIGO_BOMBA'
+        DataSource = DSAbastecimento
         KeyField = 'CODIGO'
         ListField = 'NOME'
+        ListSource = DSBomba
         TabOrder = 0
+        OnExit = DBBombaExit
       end
       object DBData: TDBEdit
         Left = 27
         Top = 437
-        Width = 130
+        Width = 120
         Height = 38
         TabStop = False
         DataField = 'DATA'
+        DataSource = DSAbastecimento
         ReadOnly = True
         TabOrder = 3
       end
@@ -165,6 +169,7 @@ object form_principal: Tform_principal
         Height = 38
         TabStop = False
         DataField = 'IMPOSTO'
+        DataSource = DSAbastecimento
         ReadOnly = True
         TabOrder = 4
       end
@@ -174,6 +179,7 @@ object form_principal: Tform_principal
         Width = 180
         Height = 38
         DataField = 'LITROS'
+        DataSource = DSAbastecimento
         ReadOnly = True
         TabOrder = 1
       end
@@ -184,6 +190,8 @@ object form_principal: Tform_principal
         Height = 38
         Hint = 'decimais separados por v'#237'rgula'
         DataField = 'VALOR'
+        DataSource = DSAbastecimento
+        MaxLength = 20
         ParentShowHint = False
         ShowHint = True
         TabOrder = 2
@@ -192,12 +200,12 @@ object form_principal: Tform_principal
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 1018
+        Width = 1026
         Height = 80
         Align = alTop
         TabOrder = 5
         VerticalAlignment = taAlignTop
-        ExplicitWidth = 998
+        ExplicitWidth = 1016
         object btNovo: TButton
           Left = 27
           Top = 16
@@ -303,21 +311,22 @@ object form_principal: Tform_principal
       end
       object Panel2: TPanel
         Left = 0
-        Top = 476
-        Width = 1018
+        Top = 489
+        Width = 1026
         Height = 386
         Align = alBottom
         ParentBackground = False
         TabOrder = 9
-        ExplicitTop = 412
-        ExplicitWidth = 998
+        ExplicitTop = 457
+        ExplicitWidth = 1016
         object DBGridAbastecimento: TDBGrid
           Left = 1
           Top = 101
-          Width = 1016
+          Width = 1024
           Height = 284
           TabStop = False
           Align = alClient
+          DataSource = DSAbastecimento
           ReadOnly = True
           TabOrder = 0
           TitleFont.Charset = DEFAULT_CHARSET
@@ -365,13 +374,13 @@ object form_principal: Tform_principal
         object Panel3: TPanel
           Left = 1
           Top = 1
-          Width = 1016
+          Width = 1024
           Height = 100
           Align = alTop
           Color = clGray
           ParentBackground = False
           TabOrder = 1
-          ExplicitWidth = 996
+          ExplicitWidth = 1014
           object Label9: TLabel
             Left = 26
             Top = 10
@@ -494,10 +503,11 @@ object form_principal: Tform_principal
   object FDAbastecimento: TFDQuery
     Connection = form_dados.FDConnection1
     SQL.Strings = (
-      'select * from abastecimento')
+      'select * from abastecimento order by 1;')
     Left = 814
     Top = 344
     object FDAbastecimentoCODIGO: TIntegerField
+      Alignment = taLeftJustify
       FieldName = 'CODIGO'
       Origin = 'CODIGO'
       ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
@@ -508,30 +518,39 @@ object form_principal: Tform_principal
       Origin = 'CODIGO_BOMBA'
       ProviderFlags = [pfInUpdate, pfInWhere, pfInKey]
       Required = True
-      OnChange = FDAbastecimentoCODIGO_BOMBAChange
-    end
-    object FDAbastecimentoLITROS: TSingleField
-      Alignment = taLeftJustify
-      FieldName = 'LITROS'
-      Origin = 'LITROS'
-    end
-    object FDAbastecimentoVALOR: TSingleField
-      Alignment = taLeftJustify
-      FieldName = 'VALOR'
-      Origin = 'VALOR'
-    end
-    object FDAbastecimentoIMPOSTO: TSingleField
-      Alignment = taLeftJustify
-      FieldName = 'IMPOSTO'
-      Origin = 'IMPOSTO'
     end
     object FDAbastecimentoDATA: TSQLTimeStampField
       FieldName = 'DATA'
       Origin = '"DATA"'
     end
+    object FDAbastecimentoLITROS: TBCDField
+      Alignment = taLeftJustify
+      FieldName = 'LITROS'
+      Origin = 'LITROS'
+      DisplayFormat = '###,###,##0.0000'
+      EditFormat = '###,###,##0.0000'
+      Precision = 18
+    end
+    object FDAbastecimentoVALOR: TBCDField
+      Alignment = taLeftJustify
+      FieldName = 'VALOR'
+      Origin = 'VALOR'
+      DisplayFormat = '###,###,##0.0000'
+      EditFormat = '###,###,##0.0000'
+      Precision = 18
+    end
+    object FDAbastecimentoIMPOSTO: TBCDField
+      Alignment = taLeftJustify
+      FieldName = 'IMPOSTO'
+      Origin = 'IMPOSTO'
+      DisplayFormat = '###,###,##0.0000'
+      EditFormat = '###,###,##0.0000'
+      Precision = 18
+    end
   end
   object DSAbastecimento: TDataSource
     DataSet = FDAbastecimento
+    OnDataChange = DSAbastecimentoDataChange
     Left = 886
     Top = 344
   end
