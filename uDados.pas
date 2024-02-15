@@ -15,6 +15,15 @@ type
     FDConnection1: TFDConnection;
     FDPhysFBDriverLink1: TFDPhysFBDriverLink;
     FDGUIxWaitCursor1: TFDGUIxWaitCursor;
+    dsDSRelatorio: TDataSource;
+    FDRelatorio: TFDQuery;
+    FDRelatorioDIA: TDateField;
+    FDRelatorioTANQUE: TStringField;
+    FDRelatorioBOMBA: TStringField;
+    FDRelatorioVALOR: TBCDField;
+    FDRelatorioSum: TFDQuery;
+    FDRelatorioSumTOTAL: TBCDField;
+    dsDSRelatorioSum: TDataSource;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

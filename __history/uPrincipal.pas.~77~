@@ -1,0 +1,410 @@
+unit uPrincipal;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.DBCtrls,
+  Vcl.StdCtrls, Vcl.Mask, Vcl.Buttons, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
+  FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB,
+  FireDAC.Comp.DataSet, FireDAC.Comp.Client, Vcl.Grids, Vcl.DBGrids,
+  Vcl.WinXPickers, Vcl.NumberBox;
+
+
+type
+  Tform_principal = class(TForm)
+    Label1: TLabel;
+    Label2: TLabel;
+    DBLitros: TDBEdit;
+    Label3: TLabel;
+    DBValor: TDBEdit;
+    Label4: TLabel;
+    DBImposto: TDBEdit;
+    Label5: TLabel;
+    DBData: TDBEdit;
+    DBBomba: TDBLookupComboBox;
+    Panel1: TPanel;
+    btNovo: TButton;
+    btSalvar: TButton;
+    btEditar: TButton;
+    btExcluir: TButton;
+    PageControl1: TPageControl;
+    tbAbastecimento: TTabSheet;
+    tbVolumeVendido: TTabSheet;
+    btCancelar: TButton;
+    qryCombustivel: TFDQuery;
+    edCombustivel: TEdit;
+    edValorLitro: TEdit;
+    Label6: TLabel;
+    Label7: TLabel;
+    edPercImposto: TEdit;
+    Label8: TLabel;
+    DBGridAbastecimento: TDBGrid;
+    Panel2: TPanel;
+    Panel3: TPanel;
+    btPesquisar: TButton;
+    Label9: TLabel;
+    dtInicial: TDateTimePicker;
+    dtFim: TDateTimePicker;
+    Label10: TLabel;
+    Label11: TLabel;
+    codBomba: TDBLookupComboBox;
+    qryBombaSearch: TFDQuery;
+    qryBombaSearchCODIGO: TIntegerField;
+    qryBombaSearchNOME: TStringField;
+    dsBombaSearch: TDataSource;
+    FDAbastecimento: TFDQuery;
+    FDAbastecimentoCODIGO: TIntegerField;
+    FDAbastecimentoCODIGO_BOMBA: TIntegerField;
+    FDAbastecimentoDATA: TSQLTimeStampField;
+    DSAbastecimento: TDataSource;
+    DSBomba: TDataSource;
+    FDBomba: TFDQuery;
+    FDBombaCODIGO: TIntegerField;
+    FDBombaNOME: TStringField;
+    FDBombaCODIGO_TANQUE: TIntegerField;
+    FDBombaCODIGO_COMBUSTIVEL: TIntegerField;
+    FDAbastecimentoLITROS: TBCDField;
+    FDAbastecimentoVALOR: TBCDField;
+    FDAbastecimentoIMPOSTO: TBCDField;
+    Panel4: TPanel;
+    Label12: TLabel;
+    Label13: TLabel;
+    btPesqVolu: TButton;
+    volDatIni: TDateTimePicker;
+    volDatFim: TDateTimePicker;
+    DBGrid1: TDBGrid;
+    FDRelatorio: TFDQuery;
+    DSRelatorio: TDataSource;
+    FDRelatorioDIA: TDateField;
+    FDRelatorioTANQUE: TStringField;
+    FDRelatorioBOMBA: TStringField;
+    FDRelatorioVALOR: TBCDField;
+    btExportar: TButton;
+    DrawGrid1: TDrawGrid;
+    DBTotalPeriodo: TDBEdit;
+    procedure btNovoClick(Sender: TObject);
+    procedure btSalvarClick(Sender: TObject);
+    procedure btEditarClick(Sender: TObject);
+    procedure btExcluirClick(Sender: TObject);
+    procedure btCancelarClick(Sender: TObject);
+    procedure DBValorExit(Sender: TObject);
+    procedure btPesquisarClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
+    procedure DBBombaExit(Sender: TObject);
+    procedure DSAbastecimentoDataChange(Sender: TObject; Field: TField);
+    procedure btPesqVoluClick(Sender: TObject);
+    procedure tbVolumeVendidoShow(Sender: TObject);
+    procedure btExportarClick(Sender: TObject);
+  private
+    { Private declarations }
+    function validaDados() : Boolean;
+    procedure valoresCombustivel;
+  public
+    { Public declarations }
+  end;
+
+var
+  form_principal: Tform_principal;
+
+
+implementation
+
+{$R *.dfm}
+
+uses uDados, uRelatorio;
+
+procedure Tform_principal.btExcluirClick(Sender: TObject);
+begin
+  if MessageDlg('Deseja realmente excluir esse abastecimento?', mtConfirmation, [mbYes, mbNo],0) = mrYes then begin
+    if Assigned(DSAbastecimento.DataSet) then
+       DSAbastecimento.DataSet.Delete;
+
+    PageControl1.ActivePage := tbAbastecimento;
+    ShowMessage('Abastecimento excluído com sucesso!');
+    btPesquisar.Click;
+  end;
+end;
+
+procedure Tform_principal.btExportarClick(Sender: TObject);
+var dat_ini,dat_fim : string;
+form_relatorio: TfrmRelatorio;
+begin
+
+   dat_ini := StringReplace(DateToStr(volDatIni.Date),'/','.',[rfReplaceAll,rfIgnoreCase]);
+   dat_fim := StringReplace(DateToStr(volDatFim.Date),'/','.',[rfReplaceAll, rfIgnoreCase]);
+
+   try
+
+     uDados.form_dados.FDRelatorio.Close;
+     uDados.form_dados.FDRelatorio.ParamByName('dat_ini').AsString := dat_ini;
+     uDados.form_dados.FDRelatorio.ParamByName('dat_fim').AsString := dat_fim;
+     uDados.form_dados.FDRelatorioSum.Close;
+     uDados.form_dados.FDRelatorioSum.ParamByName('dat_ini').AsString := dat_ini;
+     uDados.form_dados.FDRelatorioSum.ParamByName('dat_fim').AsString := dat_fim;
+
+     form_relatorio:=TfrmRelatorio.Create(Self);
+     form_relatorio.Relatorio.Preview();
+     form_relatorio.Release;
+   Except
+    on E: Exception do
+      begin
+        ShowMessage('Erro: ' + E.Message);
+      end;
+    end;
+end;
+
+procedure Tform_principal.btNovoClick(Sender: TObject);
+begin
+  if Assigned(DSAbastecimento.DataSet) then begin
+     DSAbastecimento.DataSet.Insert;
+
+     btSalvar.Enabled := True;
+     btCancelar.Enabled := True;
+     btEditar.Enabled := False;
+     btExcluir.Enabled := False;
+     DBBomba.ReadOnly := False;
+     DBValor.ReadOnly := False;
+  end;
+  PageControl1.ActivePage := tbAbastecimento;
+  DBBomba.SetFocus;
+end;
+
+procedure Tform_principal.btPesquisarClick(Sender: TObject);
+var dat_ini, dat_fim : string;
+begin
+
+  if (DateToStr(dtInicial.Date) <> '') and (DateToStr(dtFim.Date) <> '') then begin
+
+    dat_ini := '';
+    dat_fim := '';
+
+    Try
+
+      dat_ini := StringReplace(DateToStr(dtInicial.Date),'/','.',[rfReplaceAll,rfIgnoreCase]);
+      dat_fim := StringReplace(DateToStr(dtFim.Date),'/','.',[rfReplaceAll, rfIgnoreCase]);
+
+      FDAbastecimento.Close;
+        //montagem do sql de acordo com os parametros
+        FDAbastecimento.SQL.Clear;
+
+        if (Length(codBomba.Text) > 0) or ((DateToStr(dtInicial.Date) <> '') and (DateToStr(dtFim.Date) <> '')) then begin
+
+           FDAbastecimento.SQL.Text := 'select * from abastecimento where';
+        end
+        else begin
+           FDAbastecimento.SQL.Text := 'select * from abastecimento order by 1;';
+        end;
+
+
+        if (Length(codBomba.Text) > 0) then
+            FDAbastecimento.SQL.Text := FDAbastecimento.SQL.Text + ' codigo_bomba = '+ dsBombaSearch.DataSet.FieldByName('codigo').AsString;
+
+        if (Length(codBomba.Text) > 0) and (DateToStr(dtInicial.Date) <> '') and (DateToStr(dtFim.Date) <> '') then begin
+
+            FDAbastecimento.SQL.Text := FDAbastecimento.SQL.Text +
+                                       ' and ((cast(data as date) >= :dat_ini)'+
+                                       ' and (cast(data as date) <= :dat_fim))'+
+                                       ' order by 1;';
+
+            FDAbastecimento.ParamByName('dat_ini').AsString := dat_ini;
+            FDAbastecimento.ParamByName('dat_fim').AsString := dat_fim;
+        end
+        else if (DateToStr(dtInicial.Date) <> '') and (DateToStr(dtFim.Date) <> '') then begin
+
+           FDAbastecimento.SQL.Text := FDAbastecimento.SQL.Text +
+                                      ' ((cast(data as date) >= :dat_ini)'+
+                                      ' and (cast(data as date) <= :dat_fim))'+
+                                      ' order by 1;';
+
+           FDAbastecimento.ParamByName('dat_ini').AsString := dat_ini;
+           FDAbastecimento.ParamByName('dat_fim').AsString := dat_fim;
+        end;
+      FDAbastecimento.Open();
+
+      if (FDAbastecimento.RecordCount=0) then
+          ShowMessage('Nenhum registro encontrado com esses parâmetros.');
+
+    Except
+    on E: Exception do
+      begin
+        ShowMessage('Erro: ' + E.Message);
+      end;
+    end;
+  end
+  else begin
+
+    ShowMessage('Favor, preencher data inicial e final');
+  end;
+end;
+
+procedure Tform_principal.btPesqVoluClick(Sender: TObject);
+var dat_ini,dat_fim : string;
+begin
+
+   dat_ini := StringReplace(DateToStr(volDatIni.Date),'/','.',[rfReplaceAll,rfIgnoreCase]);
+   dat_fim := StringReplace(DateToStr(volDatFim.Date),'/','.',[rfReplaceAll, rfIgnoreCase]);
+
+   FDRelatorio.Close;
+      FDRelatorio.ParamByName('dat_ini').AsString := dat_ini;
+      FDRelatorio.ParamByName('dat_fim').AsString := dat_fim;
+   FDRelatorio.Open();
+end;
+
+procedure Tform_principal.btSalvarClick(Sender: TObject);
+begin
+  if MessageDlg('Deseja realmente salvar esse abastecimento?', mtConfirmation, [mbYes, mbNo],0) = mrYes then begin
+
+    if (validaDados) then begin
+
+      try
+        DSAbastecimento.DataSet.Post;
+
+        PageControl1.ActivePage := tbAbastecimento;
+        DBBomba.ReadOnly := True;
+        DBValor.ReadOnly := True;
+        btEditar.Enabled := True;
+        btExcluir.Enabled := True;
+        btCancelar.Enabled := False;
+        btSalvar.Enabled := False;
+        ShowMessage('Abastecimento salvo com sucesso!');
+        btPesquisar.Click;
+      Except
+      on E: Exception do
+        begin
+          ShowMessage('Erro: ' + E.Message );
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure Tform_principal.DBBombaExit(Sender: TObject);
+begin
+  if (DBBomba.Text<>'') and (FDAbastecimento.State in [dsInsert,dsEdit]) then begin
+
+     valoresCombustivel;
+  end;
+end;
+
+procedure Tform_principal.DBValorExit(Sender: TObject);
+begin
+  if (DBValor.Text<>'') then begin
+
+     //calcula a quantidade de litros de acordo com o valor requisitado
+     DSAbastecimento.DataSet.FieldByName('LITROS').AsFloat := (StrToFloat(DBValor.Text)/StrToFloat(edValorLitro.Text));
+
+     //calcula o imposto
+     DSAbastecimento.DataSet.FieldByName('IMPOSTO').AsFloat := (StrToFloat(DBValor.Text) * (StrToFloat(edPercImposto.Text)/100));
+  end;
+end;
+
+procedure Tform_principal.DSAbastecimentoDataChange(Sender: TObject;
+  Field: TField);
+begin
+  if (not(FDAbastecimento.State in [dsInsert,dsEdit])) and (FDAbastecimento.RecordCount=0) then begin
+
+    btEditar.Enabled := False;
+    btExcluir.Enabled := False;
+  end;
+end;
+
+procedure Tform_principal.FormShow(Sender: TObject);
+begin
+  qryBombaSearch.Close;
+  qryBombaSearch.Open;
+  FDBomba.Close;
+  FDBomba.Open();
+  dtInicial.Date := Date - 7;
+  dtFim.Date := Date;
+
+  btSalvar.Enabled := False;
+  btCancelar.Enabled := False;
+
+  DBBomba.ReadOnly := True;
+  DBValor.ReadOnly := True;
+
+  btPesquisar.Click;
+  if (FDAbastecimento.RecordCount=0) then begin
+
+    btEditar.Enabled := False;
+    btExcluir.Enabled := False;
+  end;
+end;
+
+procedure Tform_principal.tbVolumeVendidoShow(Sender: TObject);
+begin
+  volDatIni.Date := date - 7;
+  volDatFim.Date := date;
+end;
+
+function Tform_principal.validaDados: Boolean;
+begin
+  if (DBBomba.Text = '') then begin
+     ShowMessage('Favor, preencha o campo Bomba');
+     DBBomba.SetFocus;
+     result := false;
+  end
+  else if (DBValor.Text = '') then begin
+     ShowMessage('Favor, preencha o campo Valor');
+     DBValor.SetFocus;
+     result := false;
+  end;
+  result := true;
+end;
+
+procedure Tform_principal.valoresCombustivel;
+begin
+     //busca o combustível da bomba, valor por litro e imposto
+     qryCombustivel.Close;
+     qryCombustivel.SQL.Text := 'select nome,valor_litro,imposto from combustivel where codigo = :codigo;';
+     qryCombustivel.ParamByName('codigo').AsString := DSBomba.DataSet.FieldByName('codigo_combustivel').AsString;
+     qryCombustivel.Open();
+
+     edCombustivel.Text := qryCombustivel.FieldByName('nome').AsString;
+     edValorLitro.Text := qryCombustivel.FieldByName('valor_litro').AsString;
+     edPercImposto.Text := qryCombustivel.FieldByName('imposto').AsString;
+
+     qryCombustivel.Close;
+end;
+
+procedure Tform_principal.btCancelarClick(Sender: TObject);
+begin
+  if MessageDlg('Deseja realmente cancelar esta operacão?', mtConfirmation, [mbYes, mbNo],0) = mrYes then begin
+
+    if Assigned(DSAbastecimento.DataSet) then
+       DSAbastecimento.DataSet.Cancel;
+
+    PageControl1.ActivePage := tbAbastecimento;
+    btSalvar.Enabled := False;
+
+    btEditar.Enabled := True;
+    btExcluir.Enabled := True;
+    btCancelar.Enabled := False;
+    DBBomba.ReadOnly := True;
+    DBValor.ReadOnly := True;
+    ShowMessage('Operacao Cancelada.');
+  end;
+end;
+
+procedure Tform_principal.btEditarClick(Sender: TObject);
+begin
+  if Assigned(DSAbastecimento.DataSet) then begin
+
+     DSAbastecimento.DataSet.Edit;
+
+     btSalvar.Enabled := True;
+     btCancelar.Enabled := True;
+     btEditar.Enabled := False;
+     btNovo.Enabled := False;
+     btExcluir.Enabled := False;
+     DBBomba.ReadOnly := False;
+     DBValor.ReadOnly := False;
+     valoresCombustivel;
+  end;
+
+  PageControl1.ActivePage := tbAbastecimento;
+end;
+
+end.

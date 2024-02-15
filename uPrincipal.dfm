@@ -17,7 +17,7 @@ object form_principal: Tform_principal
     Top = 0
     Width = 1042
     Height = 933
-    ActivePage = tbAbastecimento
+    ActivePage = tbVolumeVendido
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -205,7 +205,6 @@ object form_principal: Tform_principal
         Align = alTop
         TabOrder = 5
         VerticalAlignment = taAlignTop
-        ExplicitWidth = 1016
         object btNovo: TButton
           Left = 27
           Top = 16
@@ -317,8 +316,6 @@ object form_principal: Tform_principal
         Align = alBottom
         ParentBackground = False
         TabOrder = 9
-        ExplicitTop = 457
-        ExplicitWidth = 1016
         object DBGridAbastecimento: TDBGrid
           Left = 1
           Top = 101
@@ -380,7 +377,6 @@ object form_principal: Tform_principal
           Color = clGray
           ParentBackground = False
           TabOrder = 1
-          ExplicitWidth = 1014
           object Label9: TLabel
             Left = 26
             Top = 10
@@ -470,12 +466,164 @@ object form_principal: Tform_principal
     object tbVolumeVendido: TTabSheet
       Caption = 'Volume Vendido'
       ImageIndex = 1
+      OnShow = tbVolumeVendidoShow
+      object Panel4: TPanel
+        Left = 0
+        Top = 0
+        Width = 1026
+        Height = 80
+        Align = alTop
+        Color = clGray
+        ParentBackground = False
+        TabOrder = 0
+        ExplicitWidth = 1016
+        object Label12: TLabel
+          Left = 26
+          Top = 8
+          Width = 110
+          Height = 30
+          Caption = 'Data Inicial'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Segoe UI'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label13: TLabel
+          Left = 202
+          Top = 8
+          Width = 87
+          Height = 30
+          Caption = 'Data Fim'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Segoe UI'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label14: TLabel
+          Left = 768
+          Top = 8
+          Width = 130
+          Height = 30
+          Caption = 'Total Per'#237'odo'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Segoe UI'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object btPesqVolu: TButton
+          Left = 394
+          Top = 25
+          Width = 122
+          Height = 49
+          Caption = 'Pesquisar'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Segoe UI'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          OnClick = btPesqVoluClick
+        end
+        object volDatIni: TDateTimePicker
+          Left = 26
+          Top = 36
+          Width = 151
+          Height = 38
+          Date = 45334.000000000000000000
+          Time = 0.000000000007275958
+          TabOrder = 0
+        end
+        object volDatFim: TDateTimePicker
+          Left = 202
+          Top = 36
+          Width = 151
+          Height = 38
+          Date = 45334.000000000000000000
+          Time = 0.000000000007275958
+          TabOrder = 1
+        end
+        object btExportar: TButton
+          Left = 546
+          Top = 25
+          Width = 122
+          Height = 49
+          Caption = 'Exportar'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Segoe UI'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+          OnClick = btExportarClick
+        end
+        object DBTotalPeriodo: TDBEdit
+          Left = 768
+          Top = 36
+          Width = 140
+          Height = 38
+          DataField = 'TOTAL'
+          DataSource = form_dados.dsDSRelatorioSum
+          ReadOnly = True
+          TabOrder = 4
+        end
+      end
+      object DBGrid1: TDBGrid
+        Left = 0
+        Top = 80
+        Width = 1026
+        Height = 795
+        Align = alClient
+        DataSource = DSRelatorio
+        ReadOnly = True
+        TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -21
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
+        Columns = <
+          item
+            Expanded = False
+            FieldName = 'DIA'
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'TANQUE'
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'BOMBA'
+            Visible = True
+          end
+          item
+            Expanded = False
+            FieldName = 'VALOR'
+            Visible = True
+          end>
+      end
+      object DrawGrid1: TDrawGrid
+        Left = 1024
+        Top = 840
+        Width = 320
+        Height = 120
+        TabOrder = 2
+      end
     end
   end
   object qryCombustivel: TFDQuery
     Connection = form_dados.FDConnection1
-    Left = 936
-    Top = 468
+    Left = 960
+    Top = 484
   end
   object qryBombaSearch: TFDQuery
     Connection = form_dados.FDConnection1
@@ -556,8 +704,8 @@ object form_principal: Tform_principal
   end
   object DSBomba: TDataSource
     DataSet = FDBomba
-    Left = 830
-    Top = 448
+    Left = 814
+    Top = 440
   end
   object FDBomba: TFDQuery
     Connection = form_dados.FDConnection1
@@ -586,5 +734,60 @@ object form_principal: Tform_principal
       FieldName = 'CODIGO_COMBUSTIVEL'
       Origin = 'CODIGO_COMBUSTIVEL'
     end
+  end
+  object FDRelatorio: TFDQuery
+    Connection = form_dados.FDConnection1
+    SQL.Strings = (
+      'select * from volume_vendido'
+      'where ((cast(dia as date) >= :dat_ini) '
+      'and (cast(dia as date) <= :dat_fim));'
+      '')
+    Left = 806
+    Top = 272
+    ParamData = <
+      item
+        Name = 'DAT_INI'
+        DataType = ftString
+        ParamType = ptInput
+        Value = ''
+      end
+      item
+        Name = 'DAT_FIM'
+        DataType = ftString
+        ParamType = ptInput
+        Value = ''
+      end>
+    object FDRelatorioDIA: TDateField
+      DisplayLabel = 'Dia'
+      FieldName = 'DIA'
+      Origin = 'DIA'
+    end
+    object FDRelatorioTANQUE: TStringField
+      DisplayLabel = 'Tanque'
+      FieldName = 'TANQUE'
+      Origin = 'TANQUE'
+      Size = 10
+    end
+    object FDRelatorioBOMBA: TStringField
+      DisplayLabel = 'Bomba'
+      FieldName = 'BOMBA'
+      Origin = 'BOMBA'
+      Size = 10
+    end
+    object FDRelatorioVALOR: TBCDField
+      Alignment = taLeftJustify
+      DisplayLabel = 'Valor'
+      FieldName = 'VALOR'
+      Origin = 'VALOR'
+      DisplayFormat = '###,###,##0.0000'
+      EditFormat = '###,###,##0.0000'
+      Precision = 18
+    end
+  end
+  object DSRelatorio: TDataSource
+    DataSet = FDRelatorio
+    OnDataChange = DSAbastecimentoDataChange
+    Left = 878
+    Top = 272
   end
 end

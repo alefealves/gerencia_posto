@@ -3,7 +3,8 @@ program GerenciaPosto;
 uses
   Vcl.Forms,
   uPrincipal in 'uPrincipal.pas' {form_principal},
-  uDados in 'uDados.pas' {form_dados: TDataModule};
+  uDados in 'uDados.pas' {form_dados: TDataModule},
+  uRelatorio in 'uRelatorio.pas' {frmRelatorio};
 
 {$R *.res}
 

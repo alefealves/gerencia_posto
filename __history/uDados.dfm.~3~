@@ -1,0 +1,120 @@
+object form_dados: Tform_dados
+  OnCreate = DataModuleCreate
+  Height = 560
+  Width = 1130
+  PixelsPerInch = 192
+  object FDConnection1: TFDConnection
+    Params.Strings = (
+      'Database=C:\Dados\LMC.FDB'
+      'User_Name=SYSDBA'
+      'Password=masterkey'
+      'Server=localhost'
+      'Port=3050'
+      'CharacterSet=WIN1252'
+      'DriverID=FB')
+    Connected = True
+    LoginPrompt = False
+    Left = 104
+    Top = 96
+  end
+  object FDPhysFBDriverLink1: TFDPhysFBDriverLink
+    VendorLib = 'C:\Program Files\Firebird\Firebird_3_0\WOW64\fbclient.dll'
+    Left = 384
+    Top = 80
+  end
+  object FDGUIxWaitCursor1: TFDGUIxWaitCursor
+    Provider = 'Forms'
+    Left = 680
+    Top = 72
+  end
+  object dsDSRelatorio: TDataSource
+    DataSet = FDRelatorio
+    Left = 728
+    Top = 248
+  end
+  object FDRelatorio: TFDQuery
+    Connection = FDConnection1
+    SQL.Strings = (
+      'select * from volume_vendido'
+      'where ((cast(dia as date) >= :dat_ini) '
+      'and (cast(dia as date) <= :dat_fim));'
+      '')
+    Left = 654
+    Top = 408
+    ParamData = <
+      item
+        Name = 'DAT_INI'
+        DataType = ftString
+        ParamType = ptInput
+        Value = Null
+      end
+      item
+        Name = 'DAT_FIM'
+        DataType = ftString
+        ParamType = ptInput
+        Value = Null
+      end>
+    object FDRelatorioDIA: TDateField
+      DisplayLabel = 'Dia'
+      FieldName = 'DIA'
+      Origin = 'DIA'
+    end
+    object FDRelatorioTANQUE: TStringField
+      DisplayLabel = 'Tanque'
+      FieldName = 'TANQUE'
+      Origin = 'TANQUE'
+      Size = 10
+    end
+    object FDRelatorioBOMBA: TStringField
+      DisplayLabel = 'Bomba'
+      FieldName = 'BOMBA'
+      Origin = 'BOMBA'
+      Size = 10
+    end
+    object FDRelatorioVALOR: TBCDField
+      Alignment = taLeftJustify
+      DisplayLabel = 'Valor'
+      FieldName = 'VALOR'
+      Origin = 'VALOR'
+      DisplayFormat = '###,###,##0.0000'
+      EditFormat = '###,###,##0.0000'
+      Precision = 18
+    end
+  end
+  object FDRelatorioSum: TFDQuery
+    Connection = FDConnection1
+    SQL.Strings = (
+      'select sum(valor) total from volume_vendido'
+      'where ((cast(dia as date) >= :dat_ini) '
+      'and (cast(dia as date) <= :dat_fim));'
+      '')
+    Left = 566
+    Top = 308
+    ParamData = <
+      item
+        Name = 'DAT_INI'
+        DataType = ftString
+        ParamType = ptInput
+        Value = ''
+      end
+      item
+        Name = 'DAT_FIM'
+        DataType = ftString
+        ParamType = ptInput
+        Value = ''
+      end>
+    object FDRelatorioSumTOTAL: TBCDField
+      AutoGenerateValue = arDefault
+      FieldName = 'TOTAL'
+      Origin = 'TOTAL'
+      ProviderFlags = []
+      ReadOnly = True
+      Precision = 18
+    end
+  end
+  object dsDSRelatorioSum: TDataSource
+    DataSet = FDRelatorioSum
+    Left = 846
+    Top = 348
+  end
+end

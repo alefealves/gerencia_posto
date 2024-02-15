@@ -68,6 +68,23 @@ type
     FDAbastecimentoLITROS: TBCDField;
     FDAbastecimentoVALOR: TBCDField;
     FDAbastecimentoIMPOSTO: TBCDField;
+    Panel4: TPanel;
+    Label12: TLabel;
+    Label13: TLabel;
+    btPesqVolu: TButton;
+    volDatIni: TDateTimePicker;
+    volDatFim: TDateTimePicker;
+    DBGrid1: TDBGrid;
+    FDRelatorio: TFDQuery;
+    DSRelatorio: TDataSource;
+    FDRelatorioDIA: TDateField;
+    FDRelatorioTANQUE: TStringField;
+    FDRelatorioBOMBA: TStringField;
+    FDRelatorioVALOR: TBCDField;
+    btExportar: TButton;
+    DrawGrid1: TDrawGrid;
+    DBTotalPeriodo: TDBEdit;
+    Label14: TLabel;
     procedure btNovoClick(Sender: TObject);
     procedure btSalvarClick(Sender: TObject);
     procedure btEditarClick(Sender: TObject);
@@ -78,6 +95,9 @@ type
     procedure FormShow(Sender: TObject);
     procedure DBBombaExit(Sender: TObject);
     procedure DSAbastecimentoDataChange(Sender: TObject; Field: TField);
+    procedure btPesqVoluClick(Sender: TObject);
+    procedure tbVolumeVendidoShow(Sender: TObject);
+    procedure btExportarClick(Sender: TObject);
   private
     { Private declarations }
     function validaDados() : Boolean;
@@ -89,11 +109,12 @@ type
 var
   form_principal: Tform_principal;
 
+
 implementation
 
 {$R *.dfm}
 
-uses uDados;
+uses uDados, uRelatorio;
 
 procedure Tform_principal.btExcluirClick(Sender: TObject);
 begin
@@ -105,6 +126,34 @@ begin
     ShowMessage('Abastecimento excluído com sucesso!');
     btPesquisar.Click;
   end;
+end;
+
+procedure Tform_principal.btExportarClick(Sender: TObject);
+var dat_ini,dat_fim : string;
+form_relatorio: TfrmRelatorio;
+begin
+
+   dat_ini := StringReplace(DateToStr(volDatIni.Date),'/','.',[rfReplaceAll,rfIgnoreCase]);
+   dat_fim := StringReplace(DateToStr(volDatFim.Date),'/','.',[rfReplaceAll, rfIgnoreCase]);
+
+   try
+
+     uDados.form_dados.FDRelatorio.Close;
+     uDados.form_dados.FDRelatorio.ParamByName('dat_ini').AsString := dat_ini;
+     uDados.form_dados.FDRelatorio.ParamByName('dat_fim').AsString := dat_fim;
+     uDados.form_dados.FDRelatorioSum.Close;
+     uDados.form_dados.FDRelatorioSum.ParamByName('dat_ini').AsString := dat_ini;
+     uDados.form_dados.FDRelatorioSum.ParamByName('dat_fim').AsString := dat_fim;
+
+     form_relatorio:=TfrmRelatorio.Create(Self);
+     form_relatorio.Relatorio.Preview();
+     form_relatorio.Release;
+   Except
+    on E: Exception do
+      begin
+        ShowMessage('Erro: ' + E.Message);
+      end;
+    end;
 end;
 
 procedure Tform_principal.btNovoClick(Sender: TObject);
@@ -191,6 +240,23 @@ begin
   end;
 end;
 
+procedure Tform_principal.btPesqVoluClick(Sender: TObject);
+var dat_ini,dat_fim : string;
+begin
+
+   dat_ini := StringReplace(DateToStr(volDatIni.Date),'/','.',[rfReplaceAll,rfIgnoreCase]);
+   dat_fim := StringReplace(DateToStr(volDatFim.Date),'/','.',[rfReplaceAll, rfIgnoreCase]);
+
+   FDRelatorio.Close;
+      FDRelatorio.ParamByName('dat_ini').AsString := dat_ini;
+      FDRelatorio.ParamByName('dat_fim').AsString := dat_fim;
+   FDRelatorio.Open;
+   uDados.form_dados.FDRelatorioSum.Close;
+     uDados.form_dados.FDRelatorioSum.ParamByName('dat_ini').AsString := dat_ini;
+     uDados.form_dados.FDRelatorioSum.ParamByName('dat_fim').AsString := dat_fim;
+   uDados.form_dados.FDRelatorioSum.Open;
+end;
+
 procedure Tform_principal.btSalvarClick(Sender: TObject);
 begin
   if MessageDlg('Deseja realmente salvar esse abastecimento?', mtConfirmation, [mbYes, mbNo],0) = mrYes then begin
@@ -270,6 +336,12 @@ begin
     btEditar.Enabled := False;
     btExcluir.Enabled := False;
   end;
+end;
+
+procedure Tform_principal.tbVolumeVendidoShow(Sender: TObject);
+begin
+  volDatIni.Date := date - 7;
+  volDatFim.Date := date;
 end;
 
 function Tform_principal.validaDados: Boolean;
